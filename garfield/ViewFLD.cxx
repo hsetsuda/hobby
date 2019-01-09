@@ -37,12 +37,9 @@ int main(int argc, char *argv[]){
   
   TApplication *app = new TApplication("app", &argc, argv);
 
-  const double uPIC_th = 0.0215;          // uPIC thickness in cm
-  const double elec_th = 0.0015;      // electrode(anode,cathode) thickness
-  const double uPIC_pitch = 0.04;       // uPIC pitch in cm
   const double axis_x = 0.04;
   const double axis_y = 0.04;
-  const double axis_z = 0.02 + uPIC_th/2 + elec_th;
+  const double axis_z = 0.04;
 
 
   MediumMagboltz *gas = new MediumMagboltz();
@@ -60,7 +57,8 @@ int main(int argc, char *argv[]){
   std::string elements = data_dir + "/mesh.elements";
   std::string nodes    = data_dir + "/mesh.nodes";
   std::string dat      = data_dir + "/dielectrics.dat";
-  std::string result   = data_dir + "/" + FILE_NAME + ".result";
+  //std::string result   = data_dir + "/" + FILE_NAME + ".result";
+  std::string result   = data_dir + "/" + FILE_NAME + "_Vd390.result";
   ComponentElmer *elm 
     = new ComponentElmer(
     header.c_str(),
@@ -71,13 +69,13 @@ int main(int argc, char *argv[]){
     "cm");
   elm->EnablePeriodicityX();
   elm->EnablePeriodicityY();
-  elm->SetMedium(4, gas);
+  elm->SetMedium(0, gas);
 
   Sensor *sensor = new Sensor();
   sensor->AddComponent(elm);
   sensor->SetArea(-axis_x,-axis_y,-axis_z,axis_x,axis_y,axis_z);
 
-  std::string Title = FILE_NAME +  "_E_field;[cm];[cm];[10e3V/cm]";
+  std::string Title = FILE_NAME +  "_E_field;[cm];[cm];[kV/cm]";
   TH2F *E_hist = new TH2F("E_hist", Title.c_str(), 
 			  300, -axis_x, axis_x,
 			  300, -axis_z, axis_z);
@@ -93,7 +91,7 @@ int main(int argc, char *argv[]){
       
       double ex, ey, ez, v;
       int stat;
-      elm->ElectricField(0, x, z, ex, ey, ez, v, med, stat);
+      elm->ElectricField(x, 0, z, ex, ey, ez, v, med, stat);
       
       double e_val = TMath::Sqrt(ex*ex + ey*ey + ez*ez);
       E_hist->Fill(x, z, e_val);
@@ -104,7 +102,7 @@ int main(int argc, char *argv[]){
   std::string filename = FILE_NAME + "_e_field.root";
   TFile OutFile( filename.c_str(), "recreate");
   E_hist->Scale(1e-3);
-  V_hist->Scale(1e-3);
+  //V_hist->Scale(1e-3);
   E_hist->Write();
   V_hist->Write();
   OutFile.Close();
