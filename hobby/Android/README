@@ -1,0 +1,4 @@
+calcurate : calculator aplication (API 25)
+
+Implement_QuaTab_calculate : same function as "calcurate" but API level is 22
+
